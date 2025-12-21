@@ -1,4 +1,5 @@
-// SkillForge - AI-Driven Adaptive Learning Platform 
+// SkillForge - AI-Driven Adaptive Learning Platform
+// second refference commmit
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
