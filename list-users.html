@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>User List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .error {
+            color: red;
+            padding: 10px;
+            background: #ffe6e6;
+            border-radius: 5px;
+        }
+
+        .loading {
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>All Registered Users</h1>
+    <div id="status" class="loading">Loading users...</div>
+    <div id="users"></div>
+
+    <script>
+        async function loadUsers() {
+            try {
+                const response = await fetch('http://localhost:8080/api/admin/users');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const users = await response.json();
+
+                document.getElementById('status').style.display = 'none';
+
+                if (users.length === 0) {
+                    document.getElementById('users').innerHTML = '<p>No users found in database.</p>';
+                    return;
+                }
+
+                let html = '<table><tr><th>ID</th><th>Full Name</th><th>Email</th><th>Role</th></tr>';
+                users.forEach(user => {
+                    html += `<tr>
+                        <td>${user.id}</td>
+                        <td>${user.fullName}</td>
+                        <td><strong>${user.email}</strong></td>
+                        <td>${user.role}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                html += `<p style="margin-top: 20px;"><strong>Total users: ${users.length}</strong></p>`;
+
+                document.getElementById('users').innerHTML = html;
+            } catch (error) {
+                document.getElementById('status').className = 'error';
+                document.getElementById('status').innerHTML = `Error loading users: ${error.message}<br><br>
+                    <strong>Note:</strong> Make sure the backend server is running and the AdminController is loaded.<br>
+                    You may need to restart the backend server for the new endpoint to be available.`;
+            }
+        }
+
+        loadUsers();
+    </script>
+</body>
+
+</html>
