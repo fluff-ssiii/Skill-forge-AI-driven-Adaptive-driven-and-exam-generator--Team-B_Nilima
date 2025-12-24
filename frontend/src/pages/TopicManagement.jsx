@@ -55,6 +55,14 @@ function TopicManagement() {
         }
     };
 
+    const buildAssetUrl = (url) => {
+        if (!url) return '';
+        // If already absolute (http/https), use as-is; otherwise prefix backend origin.
+        if (/^https?:\/\//i.test(url)) return url;
+        const normalized = url.startsWith('/') ? url : `/${url}`;
+        return `http://localhost:8080${normalized}`;
+    };
+
     const fetchTopics = async () => {
         try {
             const response = await fetch(`http://localhost:8080/api/topics/subject/${subjectId}`, {
@@ -65,6 +73,7 @@ function TopicManagement() {
             if (response.ok) {
                 const data = await response.json();
                 setTopics(data);
+                console.log('Topics fetched:', data);
             }
         } catch (err) {
             setError('Failed to fetch topics');
@@ -306,7 +315,7 @@ function TopicManagement() {
                                                 controls
                                                 style={{ width: '300px', maxHeight: '200px' }}
                                             >
-                                                <source src={`http://localhost:8080${topic.videoUrl}`} type="video/mp4" />
+                                                <source src={buildAssetUrl(topic.videoUrl)} type="video/mp4" />
                                                 Your browser does not support the video tag.
                                             </video>
                                         ) : '-'}
@@ -314,7 +323,7 @@ function TopicManagement() {
                                     <td>
                                         {topic.pdfUrl ? (
                                             <a
-                                                href={`http://localhost:8080${topic.pdfUrl}`}
+                                                href={buildAssetUrl(topic.pdfUrl)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="btn btn-small btn-success"

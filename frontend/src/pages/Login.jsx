@@ -6,8 +6,7 @@ function Login() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
-        password: '',
-        role: 'STUDENT'
+        password: ''
     });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -40,10 +39,6 @@ function Login() {
             newErrors.password = 'Password must be at least 6 characters';
         }
 
-        if (!formData.role) {
-            newErrors.role = 'Please select your account type';
-        }
-
         return newErrors;
     };
 
@@ -62,15 +57,8 @@ function Login() {
         try {
             const response = await authService.login(formData.email, formData.password);
 
-            // Get user role from response (role is a direct property)
+            // Get user role from response and redirect accordingly
             const userRole = response.role;
-
-            // Verify that the selected role matches the account's actual role
-            if (userRole !== formData.role) {
-                setApiError(`Invalid credentials. This account is registered as ${userRole}, not ${formData.role}.`);
-                setLoading(false);
-                return;
-            }
 
             // Redirect based on role
             if (userRole === 'STUDENT') {
@@ -135,24 +123,6 @@ function Login() {
                         />
                         {errors.password && (
                             <span className="form-error">{errors.password}</span>
-                        )}
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="role">Account Type:</label>
-                        <select
-                            id="role"
-                            name="role"
-                            className="form-select"
-                            value={formData.role}
-                            onChange={handleChange}
-                        >
-                            <option value="STUDENT">Student</option>
-                            <option value="INSTRUCTOR">Instructor</option>
-                            <option value="ADMIN">Admin</option>
-                        </select>
-                        {errors.role && (
-                            <span className="form-error">{errors.role}</span>
                         )}
                     </div>
 

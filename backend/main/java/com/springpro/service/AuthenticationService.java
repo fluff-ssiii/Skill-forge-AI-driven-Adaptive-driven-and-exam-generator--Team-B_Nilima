@@ -27,6 +27,11 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
+        // Prevent admin registration through public endpoint
+        if (request.getRole() == com.springpro.entity.Role.ADMIN) {
+            throw new IllegalArgumentException("Admin registration is not allowed through this endpoint");
+        }
+        
         var user = new User(
                 request.getFullName(),
                 request.getEmail(),

@@ -35,12 +35,15 @@ public class FileStorageService {
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        return type + "/" + filename;
+        // Return a URL path that frontend can directly prepend with server origin
+        return "/uploads/" + type + "/" + filename;
     }
 
     public void deleteFile(String fileUrl) throws IOException {
         if (fileUrl != null && !fileUrl.isEmpty()) {
-            Path filePath = Paths.get(uploadDir, fileUrl);
+            // fileUrl is like /uploads/videos/<name> -> strip the leading /uploads/
+            String relative = fileUrl.startsWith("/uploads/") ? fileUrl.substring("/uploads/".length()) : fileUrl;
+            Path filePath = Paths.get(uploadDir, relative);
             Files.deleteIfExists(filePath);
         }
     }

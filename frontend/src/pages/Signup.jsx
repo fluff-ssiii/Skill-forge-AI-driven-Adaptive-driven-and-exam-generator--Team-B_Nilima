@@ -77,20 +77,8 @@ function Signup() {
                 formData.role
             );
 
-            // Get user role from response (role is a direct property)
-            const userRole = response.role || formData.role;
-
-            // Redirect based on role
-            if (userRole === 'STUDENT') {
-                navigate('/student-dashboard');
-            } else if (userRole === 'INSTRUCTOR') {
-                navigate('/instructor-dashboard');
-            } else if (userRole === 'ADMIN') {
-                navigate('/admin-dashboard');
-            } else {
-                // Fallback to generic dashboard
-                navigate('/dashboard');
-            }
+            // Registration successful, redirect to login page
+            navigate('/login');
         } catch (error) {
             setApiError(error.message || 'Registration failed. Please try again.');
         } finally {
@@ -188,7 +176,6 @@ function Signup() {
                         >
                             <option value="STUDENT">Student</option>
                             <option value="INSTRUCTOR">Instructor</option>
-                            <option value="ADMIN">Admin</option>
                         </select>
                     </div>
 

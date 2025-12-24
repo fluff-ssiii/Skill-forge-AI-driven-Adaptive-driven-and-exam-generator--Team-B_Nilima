@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import './AdminDashboard.css';
 
 function AdminDashboard() {
     const navigate = useNavigate();
@@ -25,174 +26,186 @@ function AdminDashboard() {
     }
 
     return (
-        <div className="dashboard">
-            <div className="dashboard-header">
-                <div>
-                    <h1 className="dashboard-title">Admin Dashboard</h1>
-                    <p className="text-secondary">System Administration Panel</p>
-                </div>
-                <button onClick={handleLogout} className="btn btn-primary">
-                    Logout
-                </button>
-            </div>
-
-            <div className="dashboard-content">
-                {/* Admin Info Card */}
-                <div className="info-card">
-                    <div className="info-card-title">👑 Administrator</div>
-                    <div className="info-card-value" style={{ fontSize: '18px' }}>
-                        <strong>{user.fullName}</strong>
-                        <br />
-                        <span style={{ fontSize: '14px', color: '#666' }}>{user.email}</span>
-                    </div>
-                </div>
-
-                <div className="info-card">
-                    <div className="info-card-title">👥 Total Users</div>
-                    <div className="info-card-value">
-                        <span style={{ fontSize: '32px', fontWeight: 'bold' }}>1,247</span>
-                        <br />
-                        <span style={{ fontSize: '14px', color: '#00cc00' }}>↑ 28 this week</span>
-                    </div>
-                </div>
-
-                <div className="info-card">
-                    <div className="info-card-title">📚 Total Courses</div>
-                    <div className="info-card-value">
-                        <span style={{ fontSize: '32px', fontWeight: 'bold' }}>156</span>
-                        <br />
-                        <span style={{ fontSize: '14px', color: '#666' }}>Active</span>
-                    </div>
-                </div>
-
-                <div className="info-card">
-                    <div className="info-card-title">⚡ System Status</div>
-                    <div className="info-card-value">
-                        <span className="badge" style={{ backgroundColor: '#00cc00', fontSize: '16px' }}>
-                            ● Online
-                        </span>
-                        <br />
-                        <span style={{ fontSize: '14px', color: '#666' }}>All systems operational</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* User Statistics */}
-            <div style={{ marginTop: '30px' }}>
-                <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#333' }}>📊 User Statistics</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-                    <div className="card" style={{ padding: '20px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Students</div>
-                        <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#4CAF50' }}>1,050</div>
-                        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>84.2% of total</div>
-                    </div>
-                    <div className="card" style={{ padding: '20px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Instructors</div>
-                        <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2196F3' }}>180</div>
-                        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>14.4% of total</div>
-                    </div>
-                    <div className="card" style={{ padding: '20px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Admins</div>
-                        <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#FF9800' }}>17</div>
-                        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>1.4% of total</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div style={{ marginTop: '30px' }}>
-                <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#333' }}>🔔 Recent Activity</h2>
-                <div className="card" style={{ padding: '20px' }}>
-                    <div style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #eee' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>New user registered: john.doe@example.com</div>
-                        <div style={{ fontSize: '14px', color: '#666' }}>5 minutes ago • Role: Student</div>
-                    </div>
-                    <div style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #eee' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Course created: Advanced Mathematics</div>
-                        <div style={{ fontSize: '14px', color: '#666' }}>1 hour ago • By: Prof. Smith</div>
-                    </div>
-                    <div style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #eee' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>User role updated: jane.smith@example.com</div>
-                        <div style={{ fontSize: '14px', color: '#666' }}>3 hours ago • Student → Instructor</div>
-                    </div>
+        <div className="admin-dashboard">
+            {/* Header */}
+            <div className="admin-header">
+                <div className="admin-header-content">
                     <div>
-                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>System backup completed successfully</div>
-                        <div style={{ fontSize: '14px', color: '#666' }}>6 hours ago • Size: 2.4 GB</div>
+                        <h1>Admin Dashboard</h1>
+                        <p>System Administration & Management</p>
+                    </div>
+                    <button onClick={handleLogout} className="btn-logout">
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="admin-container">
+                {/* Admin Profile Card */}
+                <div className="admin-profile-card">
+                    <div className="profile-header">
+                        <div className="profile-avatar">👑</div>
+                        <div className="profile-info">
+                            <h3>Administrator</h3>
+                            <p className="profile-name">{user.fullName}</p>
+                            <p className="profile-email">{user.email}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* System Management */}
-            <div style={{ marginTop: '30px' }}>
-                <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#333' }}>⚙️ System Management</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        👥 Manage Users
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        📚 Manage Courses
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        📊 View Analytics
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        🔒 Security Settings
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        📧 Email Templates
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        💾 Backup & Restore
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        📝 Activity Logs
-                    </button>
-                    <button className="btn btn-primary" style={{ padding: '15px' }}>
-                        ⚡ System Settings
-                    </button>
+                {/* Stats Grid */}
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <div className="stat-icon">👥</div>
+                        <div className="stat-content">
+                            <p className="stat-label">Total Users</p>
+                            <p className="stat-value">1,247</p>
+                            <p className="stat-subtitle">↑ 28 this week</p>
+                        </div>
+                    </div>
+
+                    <div className="stat-card">
+                        <div className="stat-icon">📚</div>
+                        <div className="stat-content">
+                            <p className="stat-label">Total Courses</p>
+                            <p className="stat-value">156</p>
+                            <p className="stat-subtitle">Active courses</p>
+                        </div>
+                    </div>
+
+                    <div className="stat-card">
+                        <div className="stat-icon">⚡</div>
+                        <div className="stat-content">
+                            <p className="stat-label">System Status</p>
+                            <p className="stat-value online">● Online</p>
+                            <p className="stat-subtitle">All operational</p>
+                        </div>
+                    </div>
+
+                    <div className="stat-card">
+                        <div className="stat-icon">⏱️</div>
+                        <div className="stat-content">
+                            <p className="stat-label">Response Time</p>
+                            <p className="stat-value">145ms</p>
+                            <p className="stat-subtitle">Average</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            {/* Quick Stats Table */}
-            <div style={{ marginTop: '30px' }}>
-                <h2 style={{ fontSize: '24px', marginBottom: '20px', color: '#333' }}>📈 Performance Metrics</h2>
-                <div className="card" style={{ padding: '20px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid #ddd' }}>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Metric</th>
-                                <th style={{ padding: '12px', textAlign: 'right' }}>Today</th>
-                                <th style={{ padding: '12px', textAlign: 'right' }}>This Week</th>
-                                <th style={{ padding: '12px', textAlign: 'right' }}>This Month</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '12px' }}>Active Users</td>
-                                <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>342</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>1,156</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>1,247</td>
-                            </tr>
-                            <tr style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '12px' }}>New Registrations</td>
-                                <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>5</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>28</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>156</td>
-                            </tr>
-                            <tr style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '12px' }}>Login Success Rate</td>
-                                <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#00cc00' }}>99.2%</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>98.7%</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>98.5%</td>
-                            </tr>
-                            <tr>
-                                <td style={{ padding: '12px' }}>Avg Response Time</td>
-                                <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#00cc00' }}>145ms</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>152ms</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>148ms</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                {/* User Statistics */}
+                <div className="section">
+                    <h2 className="section-title">📊 User Statistics</h2>
+                    <div className="user-stats">
+                        <div className="user-stat-card">
+                            <p className="user-stat-label">Students</p>
+                            <p className="user-stat-count" style={{ color: '#4CAF50' }}>1,050</p>
+                            <p className="user-stat-percent">84.2% of total</p>
+                        </div>
+                        <div className="user-stat-card">
+                            <p className="user-stat-label">Instructors</p>
+                            <p className="user-stat-count" style={{ color: '#2196F3' }}>180</p>
+                            <p className="user-stat-percent">14.4% of total</p>
+                        </div>
+                        <div className="user-stat-card">
+                            <p className="user-stat-label">Admins</p>
+                            <p className="user-stat-count" style={{ color: '#FF9800' }}>17</p>
+                            <p className="user-stat-percent">1.4% of total</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Recent Activity */}
+                <div className="section">
+                    <h2 className="section-title">🔔 Recent Activity</h2>
+                    <div className="activity-card">
+                        <div className="activity-item">
+                            <div className="activity-icon">✓</div>
+                            <div className="activity-content">
+                                <p className="activity-title">New user registered: john.doe@example.com</p>
+                                <p className="activity-time">5 minutes ago • Role: Student</p>
+                            </div>
+                        </div>
+                        <div className="activity-item">
+                            <div className="activity-icon">✓</div>
+                            <div className="activity-content">
+                                <p className="activity-title">Course created: Advanced Mathematics</p>
+                                <p className="activity-time">1 hour ago • By: Prof. Smith</p>
+                            </div>
+                        </div>
+                        <div className="activity-item">
+                            <div className="activity-icon">✓</div>
+                            <div className="activity-content">
+                                <p className="activity-title">User role updated: jane.smith@example.com</p>
+                                <p className="activity-time">3 hours ago • Student → Instructor</p>
+                            </div>
+                        </div>
+                        <div className="activity-item">
+                            <div className="activity-icon">✓</div>
+                            <div className="activity-content">
+                                <p className="activity-title">System backup completed successfully</p>
+                                <p className="activity-time">6 hours ago • Size: 2.4 GB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* System Management */}
+                <div className="section">
+                    <h2 className="section-title">⚙️ System Management</h2>
+                    <div className="management-grid">
+                        <button className="management-btn">👥 Manage Users</button>
+                        <button className="management-btn">📚 Manage Courses</button>
+                        <button className="management-btn">📊 View Analytics</button>
+                        <button className="management-btn">🔒 Security Settings</button>
+                        <button className="management-btn">📧 Email Templates</button>
+                        <button className="management-btn">💾 Backup & Restore</button>
+                        <button className="management-btn">📝 Activity Logs</button>
+                        <button className="management-btn">⚡ System Settings</button>
+                    </div>
+                </div>
+
+                {/* Performance Metrics */}
+                <div className="section">
+                    <h2 className="section-title">📈 Performance Metrics</h2>
+                    <div className="metrics-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Today</th>
+                                    <th>This Week</th>
+                                    <th>This Month</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Active Users</td>
+                                    <td><strong>342</strong></td>
+                                    <td>1,156</td>
+                                    <td>1,247</td>
+                                </tr>
+                                <tr>
+                                    <td>New Registrations</td>
+                                    <td><strong>5</strong></td>
+                                    <td>28</td>
+                                    <td>156</td>
+                                </tr>
+                                <tr>
+                                    <td>Login Success Rate</td>
+                                    <td><strong style={{ color: '#4CAF50' }}>99.2%</strong></td>
+                                    <td>98.7%</td>
+                                    <td>98.5%</td>
+                                </tr>
+                                <tr>
+                                    <td>Avg Response Time</td>
+                                    <td><strong style={{ color: '#4CAF50' }}>145ms</strong></td>
+                                    <td>152ms</td>
+                                    <td>148ms</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

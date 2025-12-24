@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/topics")
@@ -21,14 +23,66 @@ public class TopicController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    private String normalizePath(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+
+        // Normalize any Windows separators to forward slashes so we can safely parse paths that
+        // were stored as absolute "C:\\...\\uploads\\..." values in older records.
+        String cleaned = path.replace("\\", "/");
+
+        // If the path contains an uploads folder, strip everything before it so we keep only the
+        // relative portion under uploads (covers absolute paths and double prefixes).
+        int uploadsIdx = cleaned.indexOf("uploads/");
+        if (uploadsIdx >= 0) {
+            cleaned = cleaned.substring(uploadsIdx);
+        }
+
+        // Ensure we always start from "/uploads/" regardless of the original format.
+        if (cleaned.startsWith("/uploads/")) {
+            return cleaned;
+        }
+        if (cleaned.startsWith("uploads/")) {
+            return "/" + cleaned;
+        }
+        if (cleaned.startsWith("videos/") || cleaned.startsWith("pdfs/")) {
+            return "/uploads/" + cleaned;
+        }
+
+        // Fallback: just prefix with uploads so the static handler can locate the file.
+        return "/uploads/" + cleaned.replaceFirst("^/+", "");
+    }
+
     @GetMapping
     public List<Topic> getAllTopics() {
-        return repository.findAll();
+        List<Topic> topics = repository.findAll();
+        topics.forEach(t -> {
+            t.setVideoUrl(normalizePath(t.getVideoUrl()));
+            t.setPdfUrl(normalizePath(t.getPdfUrl()));
+        });
+        return topics;
     }
 
     @GetMapping("/subject/{subjectId}")
     public List<Topic> getTopicsBySubject(@PathVariable Long subjectId) {
-        return repository.findBySubjectId(subjectId);
+        List<Topic> topics = repository.findBySubjectId(subjectId);
+        topics.forEach(t -> {
+            t.setVideoUrl(normalizePath(t.getVideoUrl()));
+            t.setPdfUrl(normalizePath(t.getPdfUrl()));
+        });
+        return topics;
+    }
+
+    // Debug helper to inspect stored URLs quickly during troubleshooting.
+    @GetMapping("/debug/urls")
+    public List<Map<String, String>> getDebugUrls() {
+        return repository.findAll().stream().map(t -> Map.of(
+                "id", String.valueOf(t.getId()),
+                "title", t.getTitle(),
+                "videoUrl", String.valueOf(normalizePath(t.getVideoUrl())),
+                "pdfUrl", String.valueOf(normalizePath(t.getPdfUrl()))
+        )).collect(Collectors.toList());
     }
 
     @PostMapping
@@ -45,12 +99,12 @@ public class TopicController {
 
         if (video != null && !video.isEmpty()) {
             String videoUrl = fileStorageService.saveFile(video, "videos");
-            topic.setVideoUrl(videoUrl);
+            topic.setVideoUrl(normalizePath(videoUrl));
         }
 
         if (pdf != null && !pdf.isEmpty()) {
             String pdfUrl = fileStorageService.saveFile(pdf, "pdfs");
-            topic.setPdfUrl(pdfUrl);
+            topic.setPdfUrl(normalizePath(pdfUrl));
         }
 
         return repository.save(topic);
@@ -75,7 +129,7 @@ public class TopicController {
                 fileStorageService.deleteFile(topic.getVideoUrl());
             }
             String videoUrl = fileStorageService.saveFile(video, "videos");
-            topic.setVideoUrl(videoUrl);
+            topic.setVideoUrl(normalizePath(videoUrl));
         }
 
         if (pdf != null && !pdf.isEmpty()) {
@@ -84,7 +138,7 @@ public class TopicController {
                 fileStorageService.deleteFile(topic.getPdfUrl());
             }
             String pdfUrl = fileStorageService.saveFile(pdf, "pdfs");
-            topic.setPdfUrl(pdfUrl);
+            topic.setPdfUrl(normalizePath(pdfUrl));
         }
 
         return repository.save(topic);
