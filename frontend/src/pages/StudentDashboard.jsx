@@ -131,6 +131,10 @@ function StudentDashboard() {
             name: 'My Courses',
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
         },
+        {
+            name: 'Quizzes',
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 8h8M8 12h8M8 16h4" /></svg>
+        },
         
         {
             name: 'Profile',
@@ -194,6 +198,8 @@ function StudentDashboard() {
                                     navigate('/student-dashboard/profile');
                                 } else if (item.name === 'My Courses') {
                                     navigate('/student-dashboard/my-courses');
+                                } else if (item.name === 'Quizzes') {
+                                    navigate('/student-dashboard/quizzes');
                                 } else if (item.name === 'AI Quiz') {
                                     navigate('/student-dashboard/ai-quiz');
                                 } else if (item.name === 'Performance') {
