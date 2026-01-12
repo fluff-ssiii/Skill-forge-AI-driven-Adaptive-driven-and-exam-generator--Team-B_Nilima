@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 
 function StudentManagement() {
+    const navigate = useNavigate();
     const [students, setStudents] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
@@ -194,6 +196,13 @@ function StudentManagement() {
                                                 onClick={() => handleEdit(student)}
                                             >
                                                 Edit
+                                            </button>
+                                            <button
+                                                className="btn btn-small btn-secondary"
+                                                onClick={() => navigate(`/instructor/students/${student.id}/performance`)}
+                                                style={{ marginLeft: 8 }}
+                                            >
+                                                View Performance
                                             </button>
                                             <button
                                                 className="btn btn-small btn-danger"

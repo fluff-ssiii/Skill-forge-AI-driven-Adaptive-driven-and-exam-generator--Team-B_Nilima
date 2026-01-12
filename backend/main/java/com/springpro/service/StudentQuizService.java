@@ -1,5 +1,6 @@
 package com.springpro.service;
 
+import com.springpro.dto.QuizQuestionDTO;
 import com.springpro.dto.QuizSubmitRequest;
 import com.springpro.entity.QuizAssignment;
 import com.springpro.entity.QuizQuestion;
@@ -11,7 +12,7 @@ import com.springpro.repository.StudentQuizAttemptRepository;
 import com.springpro.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.springpro.dto.QuizQuestionDTO;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,8 @@ public class StudentQuizService {
     @Autowired
     private StudentQuizAttemptRepository attemptRepository;
 
-    // Start an assigned quiz for a student. Enforces assignment check and returns quiz + questions.
+    // Start an assigned quiz for a student. Enforces assignment check and returns
+    // quiz + questions.
     public Map<String, Object> startAssignedQuiz(Long studentId, Long quizId) {
         if (!quizAssignmentRepository.existsByQuizIdAndStudentId(quizId, studentId)) {
             throw new RuntimeException("Quiz not assigned to this student");
@@ -48,7 +50,20 @@ public class StudentQuizService {
         matched.setStatus(com.springpro.entity.AssignmentStatus.IN_PROGRESS);
         quizAssignmentRepository.save(matched);
 
-        List<QuizQuestion> questions = quizQuestionRepository.findByQuizId(quizId);
+        List<QuizQuestionDTO> questions = quizQuestionRepository
+                .findByQuizId(quizId)
+                .stream()
+                .map(q -> {
+                    QuizQuestionDTO dto = new QuizQuestionDTO();
+                    dto.setId(q.getId());
+                    dto.setQuestion(q.getQuestion());
+                    dto.setOptionA(q.getOptionA());
+                    dto.setOptionB(q.getOptionB());
+                    dto.setOptionC(q.getOptionC());
+                    dto.setOptionD(q.getOptionD());
+                    return dto;
+                })
+                .toList();
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("quizId", quizId);
@@ -56,7 +71,8 @@ public class StudentQuizService {
         return resp;
     }
 
-    // Submit answers for an assigned quiz. Enforces assignment check and creates attempt record.
+    // Submit answers for an assigned quiz. Enforces assignment check and creates
+    // attempt record.
     public Map<String, Object> submitAssignedQuiz(Long studentId, Long quizId, QuizSubmitRequest submission) {
         if (!quizAssignmentRepository.existsByQuizIdAndStudentId(quizId, studentId)) {
             throw new RuntimeException("Quiz not assigned to this student");
@@ -79,7 +95,8 @@ public class StudentQuizService {
         StudentQuizAttempt attempt = new StudentQuizAttempt();
         attempt.setStudent(student);
 
-        // Do not reference QuizRepository directly. Store only quizId in the attempt if mapping requires it.
+        // Do not reference QuizRepository directly. Store only quizId in the attempt if
+        // mapping requires it.
         com.springpro.entity.Quiz qref = new com.springpro.entity.Quiz();
         qref.setId(quizId);
         attempt.setQuiz(qref);
@@ -91,14 +108,14 @@ public class StudentQuizService {
 
         // Mark assignment as completed
         // Mark assignment as submitted
-List<QuizAssignment> assignments = quizAssignmentRepository.findByStudentId(studentId);
-assignments.stream()
-        .filter(a -> a.getQuiz() != null && a.getQuiz().getId().equals(quizId))
-        .findFirst()
-        .ifPresent(a -> {
-            a.setStatus(com.springpro.entity.AssignmentStatus.SUBMITTED);
-            quizAssignmentRepository.save(a);
-        });
+        List<QuizAssignment> assignments = quizAssignmentRepository.findByStudentId(studentId);
+        assignments.stream()
+                .filter(a -> a.getQuiz() != null && a.getQuiz().getId().equals(quizId))
+                .findFirst()
+                .ifPresent(a -> {
+                    a.setStatus(com.springpro.entity.AssignmentStatus.SUBMITTED);
+                    quizAssignmentRepository.save(a);
+                });
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("score", score);

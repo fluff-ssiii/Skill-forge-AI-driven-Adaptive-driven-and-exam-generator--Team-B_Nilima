@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { studentQuizService } from '../services/studentQuizService';
 import QuizTaker from '../components/QuizTaker';
@@ -53,13 +54,25 @@ function StudentQuizzes() {
             setLoading(true);
             const quizId = quiz.id || quiz.quizId || (quiz.quiz && quiz.quiz.id);
             if (!quizId) throw new Error('Cannot determine quiz id to start');
-            const resp = await studentQuizService.generateQuiz(studentId, { quizId });
+            // Compute frontend-driven nextDifficulty based on available last score
+            const lastPct = Number(quiz.lastScore ?? quiz.percentage ?? quiz.progress ?? 0);
+            const computeNext = (pct) => {
+                if (pct < 50) return 'EASY';
+                if (pct <= 75) return 'MEDIUM';
+                if (pct < 90) return 'HARD';
+                return 'ADVANCED';
+            };
+            const nextDifficulty = computeNext(lastPct);
+
+            // Pass nextDifficulty in payload (frontend-only guidance)
+            const resp = await studentQuizService.generateQuiz(studentId, { quizId, nextDifficulty });
             console.log('generateQuiz response:', resp);
 
             const mapped = {
                 id: resp.quiz?.id || resp.id || quizId,
                 title: resp.quiz?.title || resp.quiz?.topic?.title || resp.title || `Quiz ${quizId}`,
                 timeLimit: resp.timeLimit || resp.quiz?.timeLimit || 15,
+                nextDifficulty: resp.nextDifficulty || resp.next_difficulty || nextDifficulty,
                 questions: Array.isArray(resp.questions)
                     ? resp.questions.map(q => ({
                         id: q.id || q.questionId,
@@ -81,13 +94,34 @@ function StudentQuizzes() {
         }
     };
 
+    const navigate = useNavigate();
+
     const handleQuizSubmit = async (submission) => {
         try {
             setLoading(true);
-            const result = await studentQuizService.submitQuiz(studentId, submission.quizId || submission.id || submission.quiz?.id, submission);
-            setQuizResult(result);
+            const resp = await studentQuizService.submitQuiz(studentId, submission.quizId || submission.id || submission.quiz?.id, submission);
+            console.log('submitQuiz response:', resp);
+
+            // Map backend response to the UI shape expected by QuizResult (be defensive)
+            const totalQuestions = resp.totalQuestions || resp.total || resp.total_questions || 0;
+            const accuracy = typeof resp.accuracy === 'number' ? resp.accuracy : (resp.accuracy ? Number(resp.accuracy) : null);
+            const score = typeof resp.score === 'number' ? resp.score : (accuracy !== null ? accuracy : 0);
+            const correctAnswers = resp.correctAnswers ?? resp.correct_answers ?? (totalQuestions && accuracy != null ? Math.round((accuracy / (accuracy > 1 ? 100 : 1)) * totalQuestions) : undefined);
+
+            const mappedResult = {
+                score: Number(score) || 0,
+                totalQuestions: Number(totalQuestions) || (Array.isArray(resp.questionResults) ? resp.questionResults.length : 0),
+                accuracy: Number(accuracy) || 0,
+                attemptId: resp.attemptId || resp.attempt_id || resp.id || null,
+                correctAnswers: correctAnswers !== undefined ? correctAnswers : null,
+                passed: resp.passed ?? (Number(score) >= 50),
+                questionResults: resp.questionResults || resp.question_results || [],
+                nextDifficulty: resp.nextDifficulty || resp.next_difficulty || 'MEDIUM'
+            };
+
+            setQuizResult(mappedResult);
             setCurrentQuiz(null);
-            // refresh list after submit
+            // refresh list after submit (optional)
             fetchAssignedQuizzes();
         } catch (err) {
             console.error('Error submitting quiz:', err);
@@ -103,6 +137,10 @@ function StudentQuizzes() {
 
     const handleResultClose = () => {
         setQuizResult(null);
+        setCurrentQuiz(null);
+        // navigate back to the assigned quizzes route
+        navigate('/student-dashboard/quizzes');
+        // refresh list
         fetchAssignedQuizzes();
     };
 
@@ -123,11 +161,19 @@ function StudentQuizzes() {
                             const title = q.title || q.name || (q.quiz && q.quiz.title) || `Quiz ${i + 1}`;
                             const duration = q.duration || q.timeLimit || (q.quiz && q.quiz.timeLimit) || '—';
                             const status = (q.status || q.state || 'Assigned').toString();
+                            const pct = Number(q.lastScore ?? q.percentage ?? q.progress ?? (q.latestAttempt && q.latestAttempt.percentage) ?? NaN);
+                            const badgeColor = (() => {
+                                if (Number.isNaN(pct)) return '#6c757d';
+                                if (pct >= 90) return '#28a745';
+                                if (pct >= 75) return '#0d6efd';
+                                if (pct >= 50) return '#fd7e14';
+                                return '#dc3545';
+                            })();
                             return (
                                 <div key={q.id || q.quizId || i} className="quiz-card">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <h3>{title}</h3>
-                                        <div className="status-pill">{status}</div>
+                                        <div className="status-pill" style={{ background: badgeColor, color: '#fff', padding: '4px 8px', borderRadius: 6 }}>{status}</div>
                                     </div>
 
                                     <div className="quiz-meta">

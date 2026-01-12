@@ -1,0 +1,4 @@
+.no-data{color:#6b7280;padding:12px}
+.status-badge{color:#fff;padding:6px 8px;border-radius:8px;font-size:12px}
+.card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+@media (max-width:800px){ .card{ padding:12px }}

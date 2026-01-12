@@ -1,69 +1,102 @@
 import React from 'react';
 import './QuizResult.css';
 
-function QuizResult({ result, onClose, onRetry }) {
-    const getScoreColor = (score) => {
-        if (score >= 85) return '#28a745';
-        if (score >= 65) return '#ffc107';
-        return '#dc3545';
+function QuizResult({ result = {}, onClose, onRetry }) {
+    const totalQuestions = Number(result.totalQuestions ?? result.total ?? (result.questionResults ? result.questionResults.length : 0) ?? 0);
+    const correct = Number(result.correctAnswers ?? result.correct_answers ?? result.correct ?? result.score ?? NaN);
+
+    // Calculate percentage defensively: prefer using number of correct answers when available.
+    let percentage = 0;
+    if (totalQuestions === 0) {
+        percentage = 0;
+    } else if (!Number.isNaN(correct)) {
+        percentage = Math.round((correct / totalQuestions) * 100);
+    } else if (result.score != null) {
+        // Fallback: score might already be a percentage or fraction
+        const raw = Number(result.score);
+        if (!Number.isNaN(raw)) {
+            if (raw <= 1) percentage = Math.round(raw * 100);
+            else if (raw <= 100) percentage = Math.round(raw);
+            else percentage = 0;
+        }
+    }
+
+    const getScoreColor = (pct) => {
+        if (pct >= 90) return '#28a745'; // green
+        if (pct >= 75) return '#0d6efd'; // blue
+        if (pct >= 50) return '#fd7e14'; // orange
+        return '#dc3545'; // red
     };
 
-    const getScoreMessage = (score, passed) => {
-        if (passed) {
-            if (score >= 90) return 'Excellent! Outstanding performance!';
-            if (score >= 80) return 'Great job! You did very well!';
-            return 'Good work! You passed!';
-        }
-        return 'Keep practicing! You can do better!';
+    const getStatusLabel = (pct) => {
+        if (pct < 50) return 'Low / Below Average';
+        if (pct <= 75) return 'Average';
+        if (pct < 90) return 'Good';
+        if (pct <= 95) return 'Very Good';
+        return 'Top 1% / Excellent';
     };
+
+    const statusLabel = getStatusLabel(percentage);
+
+    const getScoreMessage = (pct) => {
+        if (pct > 95) return 'Outstanding — top performer!';
+        if (pct >= 90) return 'Very strong performance.';
+        if (pct >= 76) return 'Good work — keep it up.';
+        if (pct >= 50) return 'Satisfactory — room to improve.';
+        return 'Needs improvement — practice more.';
+    };
+
+    const mapNextDifficulty = (pct) => {
+        if (pct < 50) return 'EASY';
+        if (pct <= 75) return 'MEDIUM';
+        if (pct < 90) return 'HARD';
+        return 'ADVANCED';
+    };
+
+    const nextDifficulty = mapNextDifficulty(percentage);
 
     return (
         <div className="quiz-result">
             <div className="result-header">
                 <div
                     className="score-circle"
-                    style={{ borderColor: getScoreColor(result.score) }}
+                    style={{ borderColor: getScoreColor(percentage) }}
                 >
-                    <div className="score-value" style={{ color: getScoreColor(result.score) }}>
-                        {result.score.toFixed(1)}%
+                    <div className="score-value" style={{ color: getScoreColor(percentage) }}>
+                        {Number.isFinite(percentage) ? `${percentage}%` : '0%'}
                     </div>
                     <div className="score-label">Your Score</div>
                 </div>
 
-                <h2 className={result.passed ? 'passed' : 'failed'}>
-                    {result.passed ? '✓ Passed!' : '✗ Not Passed'}
+                <h2 className={`status ${statusLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                    {statusLabel}
                 </h2>
 
                 <p className="score-message">
-                    {getScoreMessage(result.score, result.passed)}
+                    {getScoreMessage(percentage)}
                 </p>
             </div>
 
-            <div className="result-stats">
+                <div className="result-stats">
                 <div className="stat-item">
-                    <div className="stat-value">{result.correctAnswers}</div>
+                    <div className="stat-value">{correct ?? '—'}</div>
                     <div className="stat-label">Correct</div>
                 </div>
                 <div className="stat-item">
-                    <div className="stat-value">{result.totalQuestions - result.correctAnswers}</div>
+                    <div className="stat-value">{(totalQuestions && correct != null) ? (totalQuestions - correct) : '—'}</div>
                     <div className="stat-label">Incorrect</div>
                 </div>
                 <div className="stat-item">
-                    <div className="stat-value">{result.totalQuestions}</div>
+                    <div className="stat-value">{totalQuestions}</div>
                     <div className="stat-label">Total</div>
                 </div>
             </div>
 
             <div className="next-difficulty">
-                <h3>Next Difficulty Level</h3>
-                <div className={`difficulty-badge ${result.nextDifficulty.toLowerCase()}`}>
-                    {result.nextDifficulty}
+                <h3>Next Quiz Difficulty</h3>
+                <div className={`difficulty-badge ${String(nextDifficulty).toLowerCase()}`} style={{ background: getScoreColor(percentage), color: '#fff', display: 'inline-block', padding: '6px 10px', borderRadius: 6 }}>
+                    {nextDifficulty}
                 </div>
-                <p className="difficulty-message">
-                    {result.nextDifficulty === 'HARD' && 'You\'re ready for harder challenges!'}
-                    {result.nextDifficulty === 'MEDIUM' && 'You\'ll continue with medium difficulty.'}
-                    {result.nextDifficulty === 'EASY' && 'Let\'s practice more with easier questions.'}
-                </p>
             </div>
 
             {result.questionResults && result.questionResults.length > 0 && (
@@ -109,7 +142,7 @@ function QuizResult({ result, onClose, onRetry }) {
                     </button>
                 )}
                 <button className="close-btn" onClick={onClose}>
-                    Back to Dashboard
+                    Back to Assigned Quizzes
                 </button>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { progressService } from '../services/progressService';
+import { studentQuizService } from '../services/studentQuizService';
 import { topicService } from '../services/topicService';
 import ProgressCard from '../components/ProgressCard';
 import TopicDetailModal from '../components/TopicDetailModal';
@@ -29,18 +29,52 @@ function StudentDashboard() {
         try {
             setLoading(true);
             setError(null);
-            const data = await progressService.getDashboardData();
-            setDashboardData(data);
+
+            // Determine student identifier from auth/user state.
+            // Pass the user object to studentQuizService.resolveStudentId internally.
+            const currentUser = authService.getCurrentUser()?.user || authService.getCurrentUser();
+
+            const resp = await studentQuizService.getProgress(currentUser || studentId);
+
+            // Defensive mapping of the progress response into the dashboardData shape
+            const attempts = resp?.attempts || resp?.attemptList || resp?.attemptsList || resp?.attempt_history || [];
+            const attemptCount = resp?.totalAttempts ?? attempts.length ?? resp?.attemptCount ?? 0;
+
+            // Determine most recent attempt
+            let mostRecent = null;
+            if (Array.isArray(attempts) && attempts.length > 0) {
+                mostRecent = attempts.slice().sort((a, b) => {
+                    const ta = new Date(a.createdAt || a.timestamp || a.attemptedAt || a.date || 0).getTime() || 0;
+                    const tb = new Date(b.createdAt || b.timestamp || b.attemptedAt || b.date || 0).getTime() || 0;
+                    return tb - ta;
+                })[0];
+            }
+
+            const lastQuizScore = mostRecent?.score ?? mostRecent?.percentage ?? mostRecent?.accuracy ?? resp?.lastQuizScore ?? 0;
+
+            const mapped = {
+                currentDifficulty: resp?.currentDifficulty || mostRecent?.nextDifficulty || resp?.difficulty || 'EASY',
+                lastQuizScore: typeof lastQuizScore === 'number' ? lastQuizScore : Number(lastQuizScore) || 0,
+                completionStatus: (Number(attemptCount) > 0) ? 'Completed' : 'Not yet completed',
+                progressCards: resp?.progressCards || resp?.topics || resp?.topicProgress || [],
+                nextSuggestion: resp?.nextSuggestion || resp?.suggestion || null,
+                raw: resp,
+                totalAttempts: Number(attemptCount),
+                attempts: attempts
+            };
+
+            setDashboardData(mapped);
         } catch (err) {
-            console.error('Error fetching dashboard:', err);
+            console.error('Error fetching dashboard progress:', err);
             setError('Failed to load dashboard data. Using demo data.');
-            // Set demo data for testing
             setDashboardData({
                 currentDifficulty: 'EASY',
                 lastQuizScore: 0,
                 completionStatus: 'Not yet completed',
                 progressCards: [],
-                nextSuggestion: null
+                nextSuggestion: null,
+                totalAttempts: 0,
+                attempts: []
             });
         } finally {
             setLoading(false);
@@ -213,6 +247,71 @@ function StudentDashboard() {
                                     </div>
                                 </div>
                             )}
+                            {/* Recommended For You (rule-based) */}
+                            <div className="recommended-section">
+                                <h2>Recommended for You</h2>
+                                {(() => {
+                                    const pct = Number(dashboardData.lastQuizScore ?? 0);
+                                    const recommend = {};
+                                    if (pct < 50) {
+                                        recommend.title = 'Revise basics';
+                                        recommend.desc = 'Focus on foundational topics and quick refreshers.';
+                                        recommend.links = [
+                                            { label: 'Beginner Topics', url: '/topics/basics' },
+                                            { label: 'Intro Video', url: 'https://example.com/basics-video' },
+                                            { label: 'Basics PDF', url: 'https://example.com/basics.pdf' }
+                                        ];
+                                    } else if (pct <= 75) {
+                                        recommend.title = 'Practice more questions';
+                                        recommend.desc = 'Work on medium difficulty quizzes to build confidence.';
+                                        recommend.links = [
+                                            { label: 'Medium Quizzes', url: '/quizzes/medium' },
+                                            { label: 'Practice Set', url: 'https://example.com/practice' }
+                                        ];
+                                    } else if (pct < 90) {
+                                        recommend.title = 'You are doing well';
+                                        recommend.desc = 'Try higher difficulty practice to improve further.';
+                                        recommend.links = [
+                                            { label: 'Hard Quizzes', url: '/quizzes/hard' },
+                                            { label: 'Advanced Topics', url: '/topics/advanced' }
+                                        ];
+                                    } else {
+                                        recommend.title = 'Excellent performance';
+                                        recommend.desc = 'Consider advanced topics or mock tests.';
+                                        recommend.links = [
+                                            { label: 'Mock Tests', url: '/quizzes/mock' },
+                                            { label: 'Advanced Readings', url: '/resources/advanced' }
+                                        ];
+                                    }
+
+                                    const badgeColor = (() => {
+                                        if (pct >= 90) return '#28a745';
+                                        if (pct >= 75) return '#0d6efd';
+                                        if (pct >= 50) return '#fd7e14';
+                                        return '#dc3545';
+                                    })();
+
+                                    return (
+                                        <div className="recommended-card">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div>
+                                                    <h3>{recommend.title}</h3>
+                                                    <p>{recommend.desc}</p>
+                                                </div>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{ marginBottom: 8 }}><strong>Last Score</strong></div>
+                                                    <div style={{ background: badgeColor, color: '#fff', padding: '6px 10px', borderRadius: 6 }}>{pct}%</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginTop: 12 }}>
+                                                {recommend.links.map((l, idx) => (
+                                                    <a key={idx} href={l.url} className="suggestion-link" style={{ marginRight: 12 }}>{l.label}</a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                         </>
                     ) : (
                         <div className="dashboard-cards">

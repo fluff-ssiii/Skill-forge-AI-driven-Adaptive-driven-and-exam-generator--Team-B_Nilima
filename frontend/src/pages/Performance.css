@@ -1,0 +1,62 @@
+/* Simple modern styles for Performance page */
+.performance-page{
+  padding:20px;
+  max-width:1100px;
+  margin:0 auto;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+.performance-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.muted{color:#6c757d}
+.error{color:#dc3545}
+
+.summary-cards{display:flex;gap:16px;margin-bottom:20px}
+.performance-page .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(20,20,30,0.06);padding:16px;flex:1;display:flex;align-items:center;gap:12px;transition:transform .12s ease,box-shadow .12s ease}
+.performance-page .card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(20,20,30,0.08)}
+.performance-page .card-icon{font-size:28px;opacity:.9}
+.performance-page .card-body{flex:1}
+.performance-page .card-title{font-size:13px;color:#6b7280}
+.performance-page .card-value{font-size:22px;font-weight:700;margin-top:6px}
+.performance-page .card-value-row{display:flex;align-items:center;gap:12px}
+.performance-page .card-badge{padding:6px 10px;border-radius:12px;color:#fff;font-size:12px}
+
+.attempts-section{margin-top:12px}
+.attempts-table{background:#fff;border-radius:8px;padding:12px;box-shadow:0 6px 18px rgba(20,20,30,0.06)}
+.attempts-head{display:grid;grid-template-columns:2fr 1fr 2fr 1.5fr 1fr;padding:10px 12px;border-bottom:1px solid #eef2f7;font-weight:600;color:#374151}
+.attempt-row{display:grid;grid-template-columns:2fr 1fr 2fr 1.5fr 1fr;padding:12px;border-bottom:1px solid #f3f4f6;align-items:center;transition:background .08s ease}
+.attempt-row:hover{background:linear-gradient(90deg, rgba(15,23,42,0.02), rgba(15,23,42,0.02))}
+.attempt-quiz{font-weight:600}
+.attempt-score{color:#374151}
+.attempt-pct{display:flex;flex-direction:column;gap:6px}
+.pct-text{font-weight:700}
+.pct-bar{height:8px;background:#f1f5f9;border-radius:6px;overflow:hidden}
+.pct-fill{height:100%;border-radius:6px}
+.attempt-date{color:#6b7280;font-size:13px}
+.attempt-status{text-align:right}
+.status-badge{color:#fff;padding:6px 8px;border-radius:12px;font-size:12px}
+
+.no-data{padding:20px;color:#6b7280}
+
+@media (max-width:800px){
+  .summary-cards{flex-direction:column}
+  .attempts-head{display:none}
+  .attempt-row{grid-template-columns:1fr;gap:8px}
+  .attempt-row>div{padding:6px 0}
+}
+
+.insights-section{margin-top:20px;display:flex;flex-direction:column;gap:18px}
+.charts-grid{display:flex;gap:18px;align-items:flex-start}
+.chart-card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(20,20,30,0.06);flex:1}
+.chart-card h4{margin:0 0 8px 0}
+.chart-legend{margin-top:8px;font-size:13px;color:#374151}
+.trend-legend{margin-top:8px;color:#6b7280}
+.instructor-card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(20,20,30,0.06)}
+.strengths-table{margin-top:8px}
+.strengths-head{display:grid;grid-template-columns:2fr 1fr 1fr;padding:10px 12px;border-bottom:1px solid #eef2f7;font-weight:600;color:#374151}
+.strengths-row{display:grid;grid-template-columns:2fr 1fr 1fr;padding:10px 12px;border-bottom:1px solid #f3f4f6;align-items:center}
+.topic-name{font-weight:600}
+.topic-avg{font-weight:700}
+.topic-assess{text-align:right}
+
+@media (max-width:900px){
+  .charts-grid{flex-direction:column}
+}

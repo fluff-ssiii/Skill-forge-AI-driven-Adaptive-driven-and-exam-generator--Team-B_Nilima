@@ -10,6 +10,7 @@ import MyCourses from './pages/MyCourses';
 import AIQuiz from './pages/AIQuiz';
 import StudentQuizzes from './pages/StudentQuizzes';
 import Performance from './pages/Performance';
+import InstructorStudentPerformance from './pages/InstructorStudentPerformance';
 import InstructorDashboard from './pages/InstructorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import CourseManagement from './pages/CourseManagement';
@@ -85,6 +86,15 @@ function App() {
                     element={
                         <PrivateRoute>
                             <Performance />
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/instructor/students/:studentId/performance"
+                    element={
+                        <PrivateRoute>
+                            <InstructorStudentPerformance />
                         </PrivateRoute>
                     }
                 />
