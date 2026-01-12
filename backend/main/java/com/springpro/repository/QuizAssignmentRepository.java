@@ -8,7 +8,12 @@ import java.util.List;
 
 @Repository
 public interface QuizAssignmentRepository extends JpaRepository<QuizAssignment, Long> {
+
     List<QuizAssignment> findByStudentId(Long studentId);
 
     boolean existsByQuizIdAndStudentId(Long quizId, Long studentId);
+
+    //ADD THIS
+    boolean existsByQuizId(Long quizId);
 }
+

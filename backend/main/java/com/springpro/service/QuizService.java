@@ -12,6 +12,7 @@ import com.springpro.repository.StudentRepository;
 import com.springpro.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.springpro.exception.QuizAssignedException;
 
 import java.util.List;
 
@@ -95,8 +96,9 @@ public class QuizService {
     }
 
     public void deleteQuiz(Long id) {
-        quizRepository.deleteById(id);
-    }
+    quizRepository.deleteById(id);
+}
+
 
     public List<QuizQuestion> getQuestionsByQuizId(Long quizId) {
         return quizQuestionRepository.findByQuizId(quizId);

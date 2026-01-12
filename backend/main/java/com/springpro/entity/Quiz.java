@@ -25,6 +25,10 @@ public class Quiz {
     public Quiz() {
     }
 
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.List<QuizAssignment> assignments;
+
     public Quiz(Long id, Topic topic, String difficulty, LocalDateTime createdAt) {
         this.id = id;
         this.topic = topic;
