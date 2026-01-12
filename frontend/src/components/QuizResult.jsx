@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { progression } from '../utils/progression';
+import { topicService } from '../services/topicService';
 import './QuizResult.css';
 
 function QuizResult({ result = {}, onClose, onRetry }) {
@@ -55,6 +58,36 @@ function QuizResult({ result = {}, onClose, onRetry }) {
 
     const nextDifficulty = mapNextDifficulty(percentage);
 
+    const navigate = useNavigate();
+    const [nextTarget, setNextTarget] = useState(null);
+    const [loadingNext, setLoadingNext] = useState(false);
+
+    useEffect(() => {
+        const fetchNextTarget = async () => {
+            if (result.topicId || result.quiz?.topicId || result.quiz?.topic?.id) {
+                setLoadingNext(true);
+                const target = await progression.findNextTarget(result.topicId || result.quiz?.topicId || result.quiz?.topic?.id);
+                setNextTarget(target);
+                setLoadingNext(false);
+            }
+        };
+        fetchNextTarget();
+    }, [result]);
+
+    const handleOpenTarget = async () => {
+        if (!nextTarget) return;
+
+        if (nextTarget.type === 'TOPIC') {
+            navigate(`/student-dashboard/my-courses?topicId=${nextTarget.id}`);
+        } else if (nextTarget.type === 'SUBJECT') {
+            // If we have a subject recommendation, we could just go to courses,
+            // or we could add a subjectId link if we wanted similar logic.
+            navigate('/student-dashboard/my-courses');
+        } else if (nextTarget.type === 'COURSE') {
+            navigate('/student-dashboard/my-courses');
+        }
+    };
+
     return (
         <div className="quiz-result">
             <div className="result-header">
@@ -77,7 +110,7 @@ function QuizResult({ result = {}, onClose, onRetry }) {
                 </p>
             </div>
 
-                <div className="result-stats">
+            <div className="result-stats">
                 <div className="stat-item">
                     <div className="stat-value">{correct ?? '—'}</div>
                     <div className="stat-label">Correct</div>
@@ -92,11 +125,55 @@ function QuizResult({ result = {}, onClose, onRetry }) {
                 </div>
             </div>
 
-            <div className="next-difficulty">
-                <h3>Next Quiz Difficulty</h3>
-                <div className={`difficulty-badge ${String(nextDifficulty).toLowerCase()}`} style={{ background: getScoreColor(percentage), color: '#fff', display: 'inline-block', padding: '6px 10px', borderRadius: 6 }}>
-                    {nextDifficulty}
-                </div>
+            <div className="next-recommendation">
+                <h3>Recommended Next Step</h3>
+                {loadingNext ? (
+                    <p>Calculating your next step...</p>
+                ) : percentage >= 90 ? (
+                    <div className="recommendation-content">
+                        {nextTarget && nextTarget.type === 'COMPLETED' ? (
+                            <div className="completion-badge">
+                                <span className="icon">🏆</span>
+                                <p>{nextTarget.message}</p>
+                            </div>
+                        ) : nextTarget ? (
+                            <>
+                                <div className="target-info">
+                                    <span className="target-type">{nextTarget.type}:</span>
+                                    <span className="target-title">{nextTarget.title}</span>
+                                </div>
+                                <button className="btn btn-primary mt-2" onClick={handleOpenTarget}>
+                                    Go to {nextTarget.type.toLowerCase()}
+                                </button>
+                            </>
+                        ) : (
+                            <p>Analyzing your performance...</p>
+                        )}
+                    </div>
+                ) : percentage >= 60 ? (
+                    <div className="recommendation-content">
+                        <div className="target-info">
+                            <span className="target-type">STRATEGY:</span>
+                            <span className="target-title">Retake Quiz & Review Topic</span>
+                        </div>
+                        <p className="mt-2 muted">You're doing well! A quick review and another attempt could help you master this topic.</p>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                            <button className="btn btn-primary" onClick={onRetry}>Retake Quiz</button>
+                            <button className="btn btn-outline" onClick={() => navigate(`/student-dashboard/my-courses?topicId=${result.topicId || result.quiz?.topicId}`)}>Review Topic</button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="recommendation-content">
+                        <div className="target-info">
+                            <span className="target-type">STRATEGY:</span>
+                            <span className="target-title">Review Topic Materials</span>
+                        </div>
+                        <p className="mt-2 muted">It looks like you need a bit more practice. We recommend going through the topic materials again before retaking the quiz.</p>
+                        <button className="btn btn-primary mt-2" onClick={() => navigate(`/student-dashboard/my-courses?topicId=${result.topicId || result.quiz?.topicId}`)}>
+                            Review Topic
+                        </button>
+                    </div>
+                )}
             </div>
 
             {result.questionResults && result.questionResults.length > 0 && (

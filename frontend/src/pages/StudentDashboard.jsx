@@ -5,6 +5,7 @@ import { studentQuizService } from '../services/studentQuizService';
 import { topicService } from '../services/topicService';
 import ProgressCard from '../components/ProgressCard';
 import TopicDetailModal from '../components/TopicDetailModal';
+import Sidebar from '../components/Sidebar';
 
 function StudentDashboard() {
     const navigate = useNavigate();
@@ -12,7 +13,7 @@ function StudentDashboard() {
     const [dashboardData, setDashboardData] = useState(null);
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [showTopicModal, setShowTopicModal] = useState(false);
-    
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -92,7 +93,7 @@ function StudentDashboard() {
         }
     };
 
-    
+
 
     const handleLogout = () => {
         authService.logout();
@@ -112,7 +113,7 @@ function StudentDashboard() {
             name: 'Quizzes',
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 8h8M8 12h8M8 16h4" /></svg>
         },
-        
+
         {
             name: 'Profile',
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -123,52 +124,12 @@ function StudentDashboard() {
         },
     ];
 
-    
+
 
     return (
         <div className="dashboard-layout">
             {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="sidebar-brand">SkillForge</div>
-                </div>
-
-                <nav className="sidebar-nav">
-                    {menuItems.map((item) => (
-                        <div
-                            key={item.name}
-                            className={`sidebar-item ${activeMenu === item.name ? 'active' : ''}`}
-                            onClick={() => {
-                                setActiveMenu(item.name);
-                                if (item.name === 'Profile') {
-                                    navigate('/student-dashboard/profile');
-                                } else if (item.name === 'My Courses') {
-                                    navigate('/student-dashboard/my-courses');
-                                } else if (item.name === 'Quizzes') {
-                                    navigate('/student-dashboard/quizzes');
-                                } else if (item.name === 'AI Quiz') {
-                                    navigate('/student-dashboard/ai-quiz');
-                                } else if (item.name === 'Performance') {
-                                    navigate('/student-dashboard/performance');
-                                }
-                            }}
-                        >
-                            <span style={{ display: 'flex', alignItems: 'center' }}>{item.icon}</span>
-                            {item.name}
-                        </div>
-                    ))}
-                    <div className="sidebar-item" onClick={handleLogout}>
-                        <span style={{ display: 'flex', alignItems: 'center' }}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                <polyline points="16 17 21 12 16 7" />
-                                <line x1="21" y1="12" x2="9" y2="12" />
-                            </svg>
-                        </span>
-                        Logout
-                    </div>
-                </nav>
-            </div>
+            <Sidebar />
 
             {/* Main Content */}
             <div className="main-content">
@@ -327,7 +288,7 @@ function StudentDashboard() {
                                 <button className="btn btn-primary">View Courses</button>
                             </div>
 
-                            
+
 
                             <div className="dashboard-card">
                                 <h3>

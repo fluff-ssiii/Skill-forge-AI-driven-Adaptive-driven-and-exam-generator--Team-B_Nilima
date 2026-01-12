@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import { studentQuizService } from '../services/studentQuizService';
 import QuizTaker from '../components/QuizTaker';
 import QuizResult from '../components/QuizResult';
+import Sidebar from '../components/Sidebar';
 import './StudentQuizzes.css';
 
 function StudentQuizzes() {
@@ -83,6 +84,7 @@ function StudentQuizzes() {
                         optionD: q.optionD || q.options?.[3] || null,
                     }))
                     : (resp.quiz?.questions || []),
+                topicId: resp.quiz?.topicId || resp.topicId || (quiz.quiz && quiz.quiz.topicId) || quiz.topicId
             };
 
             setCurrentQuiz(mapped);
@@ -116,7 +118,8 @@ function StudentQuizzes() {
                 correctAnswers: correctAnswers !== undefined ? correctAnswers : null,
                 passed: resp.passed ?? (Number(score) >= 50),
                 questionResults: resp.questionResults || resp.question_results || [],
-                nextDifficulty: resp.nextDifficulty || resp.next_difficulty || 'MEDIUM'
+                nextDifficulty: resp.nextDifficulty || resp.next_difficulty || 'MEDIUM',
+                topicId: submission.topicId || (currentQuiz && currentQuiz.topicId)
             };
 
             setQuizResult(mappedResult);
@@ -145,77 +148,92 @@ function StudentQuizzes() {
     };
 
     return (
-        <div className="page-quizzes">
-            <div style={{ maxWidth: 1100 }}>
-                <div className="quizzes-header">
-                    <h2>Assigned Quizzes</h2>
-                </div>
-                {error && <div className="quizzes-error">{error}</div>}
-            {!currentQuiz && !quizResult && (
-                <>
-                    {loading && <p>Loading assigned quizzes...</p>}
-                    {!loading && quizzes.length === 0 && <p>No assigned quizzes found.</p>}
+        <div className="dashboard-layout">
+            <Sidebar />
+            <div className={`main-content ${(currentQuiz || quizResult) ? 'quiz-active' : ''}`} style={{ background: '#ffffff' }}>
+                <div className="page-quizzes">
+                    {!currentQuiz && !quizResult ? (
+                        <>
+                            <div className="content-header">
+                                <h1>Assigned Quizzes</h1>
+                                <p style={{ color: '#7f8c8d' }}>Practice and improve your skills with available quizzes.</p>
+                            </div>
 
-                    <div className="quizzes-grid">
-                        {quizzes.map((q, i) => {
-                            const title = q.title || q.name || (q.quiz && q.quiz.title) || `Quiz ${i + 1}`;
-                            const duration = q.duration || q.timeLimit || (q.quiz && q.quiz.timeLimit) || '—';
-                            const status = (q.status || q.state || 'Assigned').toString();
-                            const pct = Number(q.lastScore ?? q.percentage ?? q.progress ?? (q.latestAttempt && q.latestAttempt.percentage) ?? NaN);
-                            const badgeColor = (() => {
-                                if (Number.isNaN(pct)) return '#6c757d';
-                                if (pct >= 90) return '#28a745';
-                                if (pct >= 75) return '#0d6efd';
-                                if (pct >= 50) return '#fd7e14';
-                                return '#dc3545';
-                            })();
-                            return (
-                                <div key={q.id || q.quizId || i} className="quiz-card">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <h3>{title}</h3>
-                                        <div className="status-pill" style={{ background: badgeColor, color: '#fff', padding: '4px 8px', borderRadius: 6 }}>{status}</div>
-                                    </div>
+                            <div className="content-body">
+                                {error && <div className="quizzes-error">{error}</div>}
+                                {loading && <p>Loading assigned quizzes...</p>}
+                                {!loading && quizzes.length === 0 && <p>No assigned quizzes found.</p>}
 
-                                    <div className="quiz-meta">
-                                        <div><strong>Course:</strong> {q.courseName || '—'}</div>
-                                        <div><strong>Duration:</strong> {duration}</div>
-                                    </div>
+                                <div className="quizzes-grid">
+                                    {quizzes
+                                        .filter(q => {
+                                            const pct = Number(q.lastScore ?? q.percentage ?? q.progress ?? (q.latestAttempt && q.latestAttempt.percentage) ?? 0);
+                                            return pct < 90;
+                                        })
+                                        .map((q, i) => {
+                                            const title = q.title || q.name || (q.quiz && q.quiz.title) || `Quiz ${i + 1}`;
+                                            const duration = q.duration || q.timeLimit || (q.quiz && q.quiz.timeLimit) || '—';
+                                            const status = (q.status || q.state || 'Assigned').toString();
+                                            const pct = Number(q.lastScore ?? q.percentage ?? q.progress ?? (q.latestAttempt && q.latestAttempt.percentage) ?? NaN);
+                                            const badgeColor = (() => {
+                                                if (Number.isNaN(pct)) return '#6c757d';
+                                                if (pct >= 90) return '#28a745';
+                                                if (pct >= 75) return '#0d6efd';
+                                                if (pct >= 50) return '#fd7e14';
+                                                return '#dc3545';
+                                            })();
+                                            return (
+                                                <div key={q.id || q.quizId || i} className="quiz-card">
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                        <h3>{title}</h3>
+                                                        <div className="status-pill" style={{ background: badgeColor, color: '#fff', padding: '4px 8px', borderRadius: 6 }}>{status}</div>
+                                                    </div>
 
-                                    <div className="quiz-actions">
-                                        <button className="btn-start" onClick={() => onStart(q)}>Start Quiz</button>
-                                    </div>
+                                                    <div className="quiz-meta">
+                                                        <div><strong>Course:</strong> {q.courseName || '—'}</div>
+                                                        <div><strong>Duration:</strong> {duration}</div>
+                                                    </div>
+
+                                                    <div className="quiz-actions">
+                                                        <button className="btn-start" onClick={() => onStart(q)}>Start Quiz</button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                 </div>
-                            );
-                        })}
-                    </div>
-                </>
-            )}
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{
+                            maxWidth: 850,
+                            width: '90%',
+                            margin: '40px auto',
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center'
+                        }}>
+                            {error && <div className="quizzes-error">{error}</div>}
+                            {currentQuiz && (
+                                <QuizTaker
+                                    quiz={currentQuiz}
+                                    onSubmit={handleQuizSubmit}
+                                    onCancel={handleQuizCancel}
+                                />
+                            )}
 
-            {currentQuiz && (
-                <div className="dashboard-layout">
-                    <div className="main-content" style={{ marginLeft: 0, width: '100%' }}>
-                        <QuizTaker
-                            quiz={currentQuiz}
-                            onSubmit={handleQuizSubmit}
-                            onCancel={handleQuizCancel}
-                        />
-                    </div>
+                            {quizResult && (
+                                <QuizResult
+                                    result={quizResult}
+                                    onClose={handleResultClose}
+                                    onRetry={() => { setQuizResult(null); }}
+                                />
+                            )}
+                        </div>
+                    )}
                 </div>
-            )}
-
-            {quizResult && (
-                <div className="dashboard-layout">
-                    <div className="main-content" style={{ marginLeft: 0, width: '100%' }}>
-                        <QuizResult
-                            result={quizResult}
-                            onClose={handleResultClose}
-                            onRetry={() => { setQuizResult(null); }}
-                        />
-                    </div>
-                </div>
-            )}
+            </div>
         </div>
-    </div>
     );
 }
 

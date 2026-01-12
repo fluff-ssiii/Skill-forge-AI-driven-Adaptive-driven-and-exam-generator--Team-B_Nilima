@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { courseService } from '../services/courseService';
 import { subjectService } from '../services/subjectService';
 import { topicService } from '../services/topicService';
@@ -7,6 +7,7 @@ import { authService } from '../services/authService';
 import CourseCard from '../components/CourseCard';
 import SubjectCard from '../components/SubjectCard';
 import TopicCard from '../components/TopicCard';
+import Sidebar from '../components/Sidebar';
 import '../components/CourseList.css';
 
 const VIEWS = {
@@ -30,11 +31,61 @@ function MyCourses() {
 
     const user = authService.getCurrentUser()?.user || authService.getCurrentUser();
 
+    const location = useLocation();
+
     useEffect(() => {
-        if (view === VIEWS.COURSES) {
+        const queryParams = new URLSearchParams(location.search);
+        const topicId = queryParams.get('topicId');
+
+        if (topicId) {
+            handleDeepLink(Number(topicId));
+        } else if (view === VIEWS.COURSES) {
             fetchAllCourses();
         }
-    }, [view]);
+    }, [view, location.search]);
+
+    const handleDeepLink = async (topicId) => {
+        try {
+            setLoading(true);
+            // 1. Get all topics to find which subject this one belongs to
+            const allTopics = await topicService.getAllTopics();
+            const topic = allTopics.find(t => t.id === topicId);
+            if (!topic) {
+                fetchAllCourses();
+                return;
+            }
+
+            // 2. Get the subject to find which course it belongs to
+            const allSubjects = await subjectService.getAllSubjects();
+            const subject = allSubjects.find(s => s.id === topic.subjectId);
+            if (!subject) {
+                fetchAllCourses();
+                return;
+            }
+
+            // 3. Load the subjects for that course and topics for that subject
+            const courseSubjectsRes = await fetch(`http://localhost:8080/api/subjects/course/${subject.courseId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const courseSubjects = await courseSubjectsRes.json();
+
+            const subjectTopics = await topicService.getTopicsBySubject(subject.id);
+
+            // 4. Update state to show the topics view
+            setSubjects(courseSubjects);
+            setSelectedSubject(subject);
+            setTopics(subjectTopics);
+            setView(VIEWS.TOPICS);
+
+            // Note: We don't automatically open the modal here as it might be intrusive,
+            // but the topics for that subject are now shown.
+        } catch (err) {
+            console.error('Deep link failed:', err);
+            fetchAllCourses();
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchAllCourses = async () => {
         try {
@@ -169,46 +220,7 @@ function MyCourses() {
     return (
         <div className="dashboard-layout" style={{ background: 'white' }}>
             {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="sidebar-brand">SkillForge</div>
-                </div>
-
-                <nav className="sidebar-nav">
-                    {menuItems.map((item) => (
-                        <div
-                            key={item.name}
-                            className={`sidebar-item ${item.name === 'My Courses' ? 'active' : ''}`}
-                            onClick={() => {
-                                if (item.name === 'Dashboard') {
-                                    navigate('/student-dashboard');
-                                } else if (item.name === 'Profile') {
-                                    navigate('/student-dashboard/profile');
-                                } else if (item.name === 'Quizzes') {
-                                    navigate('/student-dashboard/quizzes');
-                                } else if (item.name === 'My Courses') {
-                                    handleBackToCourses();
-                                } else if (item.name === 'Performance') {
-                                    navigate('/student-dashboard/performance');
-                                }
-                            }}
-                        >
-                            <span style={{ display: 'flex', alignItems: 'center' }}>{item.icon}</span>
-                            {item.name}
-                        </div>
-                    ))}
-                    <div className="sidebar-item" onClick={handleLogout}>
-                        <span style={{ display: 'flex', alignItems: 'center' }}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                <polyline points="16 17 21 12 16 7" />
-                                <line x1="21" y1="12" x2="9" y2="12" />
-                            </svg>
-                        </span>
-                        Logout
-                    </div>
-                </nav>
-            </div>
+            <Sidebar />
 
             {/* Main Content */}
             <div className="main-content" style={{ background: 'white' }}>

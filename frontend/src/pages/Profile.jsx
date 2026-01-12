@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { authService } from '../services/authService';
 import { studentService } from '../services/studentService';
+import Sidebar from '../components/Sidebar';
 import './Profile.css';
 
 function Profile() {
@@ -63,50 +64,55 @@ function Profile() {
     };
 
     return (
-        <div className="profile-page">
-            {loading ? (
-                <div className="profile-loading">Loading...</div>
-            ) : error ? (
-                <div className="profile-error">{error}</div>
-            ) : (
-                <div className="profile-card">
-                    <div className="profile-card-header">
-                        <div className="avatar-wrap">
-                            <div className="avatar">{(profile?.fullName || name || 'S').charAt(0)}</div>
-                            <button className="avatar-edit" aria-label="Edit avatar" title="Change avatar" onClick={() => { /* UI only */ }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" stroke="#fff" strokeWidth="0" fill="#fff" opacity="0.9"/><path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="#fff" strokeWidth="0" fill="#fff" opacity="0.9"/></svg>
-                            </button>
-                        </div>
-
-                        <div className="header-info">
-                            <h2 className="profile-name">{profile?.fullName || name || 'Student'}</h2>
-                            <div className="profile-sub">Student profile</div>
-                            <div className="profile-email">{profile?.email || email}</div>
-                        </div>
-                    </div>
-
-                    <div className="profile-card-body">
-                        <form className="profile-form" onSubmit={e => { e.preventDefault(); handleSave(); }}>
-                            <div className="form-grid">
-                                <div className="form-row">
-                                    <label className="form-label" htmlFor="fullName">Full name</label>
-                                    <input id="fullName" className="form-input" value={name} onChange={e => setName(e.target.value)} />
+        <div className="dashboard-layout">
+            <Sidebar />
+            <div className="main-content">
+                <div className="profile-page">
+                    {loading ? (
+                        <div className="profile-loading">Loading...</div>
+                    ) : error ? (
+                        <div className="profile-error">{error}</div>
+                    ) : (
+                        <div className="profile-card">
+                            <div className="profile-card-header">
+                                <div className="avatar-wrap">
+                                    <div className="avatar">{(profile?.fullName || name || 'S').charAt(0)}</div>
+                                    <button className="avatar-edit" aria-label="Edit avatar" title="Change avatar" onClick={() => { /* UI only */ }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" stroke="#fff" strokeWidth="0" fill="#fff" opacity="0.9" /><path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="#fff" strokeWidth="0" fill="#fff" opacity="0.9" /></svg>
+                                    </button>
                                 </div>
 
-                                <div className="form-row">
-                                    <label className="form-label" htmlFor="email">Email</label>
-                                    <input id="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} />
+                                <div className="header-info">
+                                    <h2 className="profile-name">{profile?.fullName || name || 'Student'}</h2>
+                                    <div className="profile-sub">Student profile</div>
+                                    <div className="profile-email">{profile?.email || email}</div>
                                 </div>
                             </div>
 
-                            <div className="form-actions">
-                                <button type="submit" className="btn btn-primary" disabled={loading}>Save Changes</button>
-                                <button type="button" className="btn btn-outline" onClick={() => { setName(profile?.name || profile?.fullName || ''); setEmail(profile?.email || ''); }}>Reset</button>
+                            <div className="profile-card-body">
+                                <form className="profile-form" onSubmit={e => { e.preventDefault(); handleSave(); }}>
+                                    <div className="form-grid">
+                                        <div className="form-row">
+                                            <label className="form-label" htmlFor="fullName">Full name</label>
+                                            <input id="fullName" className="form-input" value={name} onChange={e => setName(e.target.value)} />
+                                        </div>
+
+                                        <div className="form-row">
+                                            <label className="form-label" htmlFor="email">Email</label>
+                                            <input id="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-actions">
+                                        <button type="submit" className="btn btn-primary" disabled={loading}>Save Changes</button>
+                                        <button type="button" className="btn btn-outline" onClick={() => { setName(profile?.name || profile?.fullName || ''); setEmail(profile?.email || ''); }}>Reset</button>
+                                    </div>
+                                </form>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }
