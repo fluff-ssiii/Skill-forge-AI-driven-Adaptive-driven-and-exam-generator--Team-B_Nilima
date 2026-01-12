@@ -5,9 +5,6 @@ import { progressService } from '../services/progressService';
 import { topicService } from '../services/topicService';
 import ProgressCard from '../components/ProgressCard';
 import TopicDetailModal from '../components/TopicDetailModal';
-import QuizTaker from '../components/QuizTaker';
-import QuizResult from '../components/QuizResult';
-import { studentQuizService } from '../services/studentQuizService';
 
 function StudentDashboard() {
     const navigate = useNavigate();
@@ -15,8 +12,7 @@ function StudentDashboard() {
     const [dashboardData, setDashboardData] = useState(null);
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [showTopicModal, setShowTopicModal] = useState(false);
-    const [currentQuiz, setCurrentQuiz] = useState(null);
-    const [quizResult, setQuizResult] = useState(null);
+    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -62,60 +58,7 @@ function StudentDashboard() {
         }
     };
 
-    const handleStartQuiz = async (topicId) => {
-        try {
-            setLoading(true);
-            const difficulty = dashboardData?.currentDifficulty || 'EASY';
-            const resp = await studentQuizService.generateQuiz(studentId, { topicId, difficulty });
-            const mapped = {
-                id: resp.quiz.id,
-                title: `Adaptive Quiz - ${resp.quiz.topic?.title || 'Topic'}`,
-                timeLimit: 15,
-                questions: resp.questions.map(q => ({
-                    id: q.id,
-                    questionText: q.question,
-                    optionA: q.optionA,
-                    optionB: q.optionB,
-                    optionC: q.optionC,
-                    optionD: q.optionD
-                }))
-            };
-            setCurrentQuiz(mapped);
-            setShowTopicModal(false);
-        } catch (err) {
-            console.error('Error loading quiz:', err);
-            alert('Failed to load quiz. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleQuizSubmit = async (submission) => {
-        try {
-            setLoading(true);
-            const result = await studentQuizService.submitQuiz(studentId, submission.quizId, submission);
-            setQuizResult(result);
-            setCurrentQuiz(null);
-            // Refresh dashboard data
-            fetchDashboardData();
-        } catch (err) {
-            console.error('Error submitting quiz:', err);
-            alert('Failed to submit quiz. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleQuizCancel = () => {
-        if (window.confirm('Are you sure you want to cancel this quiz? Your progress will be lost.')) {
-            setCurrentQuiz(null);
-        }
-    };
-
-    const handleResultClose = () => {
-        setQuizResult(null);
-        fetchDashboardData();
-    };
+    
 
     const handleLogout = () => {
         authService.logout();
@@ -146,38 +89,7 @@ function StudentDashboard() {
         },
     ];
 
-    // Render quiz taker if quiz is active
-    if (currentQuiz) {
-        return (
-            <div className="dashboard-layout">
-                <div className="main-content" style={{ marginLeft: 0, width: '100%' }}>
-                    <QuizTaker
-                        quiz={currentQuiz}
-                        onSubmit={handleQuizSubmit}
-                        onCancel={handleQuizCancel}
-                    />
-                </div>
-            </div>
-        );
-    }
-
-    // Render quiz result if available
-    if (quizResult) {
-        return (
-            <div className="dashboard-layout">
-                <div className="main-content" style={{ marginLeft: 0, width: '100%' }}>
-                    <QuizResult
-                        result={quizResult}
-                        onClose={handleResultClose}
-                        onRetry={() => {
-                            setQuizResult(null);
-                            // Could reload the same quiz here
-                        }}
-                    />
-                </div>
-            </div>
-        );
-    }
+    
 
     return (
         <div className="dashboard-layout">
@@ -294,7 +206,7 @@ function StudentDashboard() {
                                         </div>
                                         <button
                                             className="btn btn-primary"
-                                            onClick={() => handleStartQuiz(dashboardData.nextSuggestion.topicId)}
+                                            onClick={() => navigate('/student-dashboard/quizzes')}
                                         >
                                             Start Quiz
                                         </button>

@@ -8,6 +8,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import Profile from './pages/Profile';
 import MyCourses from './pages/MyCourses';
 import AIQuiz from './pages/AIQuiz';
+import StudentQuizzes from './pages/StudentQuizzes';
 import Performance from './pages/Performance';
 import InstructorDashboard from './pages/InstructorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -60,6 +61,14 @@ function App() {
                     element={
                         <PrivateRoute>
                             <MyCourses />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/student-dashboard/quizzes"
+                    element={
+                        <PrivateRoute>
+                            <StudentQuizzes />
                         </PrivateRoute>
                     }
                 />
